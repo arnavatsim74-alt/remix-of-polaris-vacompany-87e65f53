@@ -19,7 +19,7 @@ import Leaderboard from "@/pages/Leaderboard";
 import Events from "@/pages/Events";
 import Details from "@/pages/Details";
 import Challenges from "@/pages/Challenges";
-import AflvBonus from "@/pages/AflvBonus";
+import Bonus from "@/pages/Bonus";
 import Tracker from "@/pages/Tracker";
 import AdminPireps from "@/pages/admin/AdminPireps";
 import AdminRoutes from "@/pages/admin/AdminRoutes";
@@ -61,7 +61,7 @@ const App = () => (
                 <Route path="events" element={<Events />} />
                 <Route path="details" element={<Details />} />
                 <Route path="challenges" element={<Challenges />} />
-                <Route path="aflv-bonus" element={<AflvBonus />} />
+                <Route path="Bonus" element={<Bonus />} />
                 <Route path="tracker" element={<Tracker />} />
                 <Route path="admin/pireps" element={<AdminPireps />} />
                 <Route path="admin/routes" element={<AdminRoutes />} />
