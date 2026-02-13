@@ -35,7 +35,7 @@ serve(async (req) => {
           { name: "Type", value: flight_type, inline: true },
         ],
         timestamp: new Date().toISOString(),
-        footer: { text: "Aeroflot Virtual" },
+        footer: { text: "Powered By VACompany" },
       };
     } else if (type === "featured_route") {
       webhookUrl = Deno.env.get("DISCORD_WEBHOOK_FEATURED") || Deno.env.get("DISCORD_WEBHOOK_URL");
@@ -51,7 +51,7 @@ serve(async (req) => {
           { name: "Date", value: featured_date, inline: true },
         ],
         timestamp: new Date().toISOString(),
-        footer: { text: "Aeroflot Virtual" },
+        footer: { text: "Powered By VACompany" },
       };
     } else if (type === "new_challenge") {
       webhookUrl = Deno.env.get("DISCORD_WEBHOOK_CHALLENGES") || Deno.env.get("DISCORD_WEBHOOK_URL");
@@ -66,7 +66,7 @@ serve(async (req) => {
         ],
         ...(image_url ? { image: { url: image_url } } : {}),
         timestamp: new Date().toISOString(),
-        footer: { text: "Aeroflot Virtual" },
+        footer: { text: "Powered By VACompany" },
       };
     } else {
       // Default: rank promotion
@@ -83,7 +83,7 @@ serve(async (req) => {
           { name: "New Rank", value: formatRank(new_rank), inline: true },
         ],
         timestamp: new Date().toISOString(),
-        footer: { text: "Aeroflot Virtual" },
+        footer: { text: "Powered By VACompany" },
       };
     }
 
