@@ -179,9 +179,9 @@ export default function ApplyPage() {
           <Card className="w-full max-w-2xl">
           <CardHeader className="text-center">
             <div className="mx-auto mb-4">
-              <img src={aeroflotLogo} alt="Aeroflot VA" className="h-12 w-auto object-contain" />
+              <img src={aeroflotLogo} alt="RAMVA" className="h-12 w-auto object-contain" />
             </div>
-            <CardTitle className="text-2xl">Join Demo Virtual</CardTitle>
+            <CardTitle className="text-2xl">Join Royal Air Maroc Virtual</CardTitle>
             <CardDescription>
               Complete this form to apply for a pilot position with our virtual airline on Infinite Flight
             </CardDescription>
@@ -246,7 +246,7 @@ export default function ApplyPage() {
                     <Label htmlFor="ivaoId">Preferred Callsign</Label>
                     <Input
                       id="ivaoId"
-                      placeholder="Your preferred callsign (DEMO001)"
+                      placeholder="Your preferred callsign (AT001)"
                       value={ivaoId}
                       onChange={(e) => setIvaoId(e.target.value)}
                       disabled={isLoading}
