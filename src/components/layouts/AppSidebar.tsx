@@ -26,7 +26,7 @@ const pilotNavItems = [
   { title: "Leaderboard", url: "/leaderboard", icon: Trophy },
   { title: "Events", url: "/events", icon: Calendar },
   { title: "Details", url: "/details", icon: Info },
-  { title: "Safar Flyer", url: "/aflv-bonus", icon: CreditCard },
+  { title: "Safar Flyer", url: "/Bonus", icon: CreditCard },
   { title: "Tracker", url: "/tracker", icon: MapPin },
 ];
 
