@@ -123,8 +123,8 @@ export default function AflvBonus() {
     return (
       <div className="space-y-8">
         <div>
-          <h1 className="text-3xl font-bold">AFLV Bonus</h1>
-          <p className="text-muted-foreground">Aeroflot Virtual Frequent Flyer Program</p>
+          <h1 className="text-3xl font-bold">Safar Miles</h1>
+          <p className="text-muted-foreground">Royal Air Maroc Virtual Frequent Flyer Program</p>
         </div>
         <Skeleton className="h-64 w-full" />
       </div>
@@ -143,7 +143,7 @@ export default function AflvBonus() {
         <Card className="overflow-hidden">
           <CardHeader>
             <CardTitle className="text-sm uppercase tracking-wider text-muted-foreground">
-              Your Frequent Flyer Card
+              Your Safar Flyer Card
             </CardTitle>
           </CardHeader>
           <CardContent>
