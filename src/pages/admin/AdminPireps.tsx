@@ -192,7 +192,11 @@ export default function AdminPireps() {
                     <th className="text-left py-3 px-2 font-medium">Date</th>
                     <th className="text-left py-3 px-2 font-medium">Flight</th>
                     <th className="text-left py-3 px-2 font-medium">Route</th>
+                    <th className="text-left py-3 px-2 font-medium">Aircraft</th>
+                    <th className="text-left py-3 px-2 font-medium">Operator</th>
+                    <th className="text-left py-3 px-2 font-medium">Type</th>
                     <th className="text-left py-3 px-2 font-medium">Hours</th>
+                    <th className="text-left py-3 px-2 font-medium">Multiplier</th>
                     <th className="text-left py-3 px-2 font-medium">Status</th>
                     <th className="text-right py-3 px-2 font-medium">Actions</th>
                   </tr>
@@ -213,13 +217,18 @@ export default function AdminPireps() {
                       <td className="py-3 px-2 font-mono">
                         {pirep.dep_icao} → {pirep.arr_icao}
                       </td>
+                      <td className="py-3 px-2">{pirep.aircraft_icao}</td>
+                      <td className="py-3 px-2 text-muted-foreground">{pirep.operator}</td>
+                      <td className="py-3 px-2">
+                        <Badge variant="secondary" className="capitalize">
+                          {pirep.flight_type}
+                        </Badge>
+                      </td>
                       <td className="py-3 px-2">
                         {Number(pirep.flight_hours).toFixed(1)}
-                        {Number(pirep.multiplier) !== 1 && (
-                          <span className="text-xs text-muted-foreground ml-1">
-                            (×{pirep.multiplier})
-                          </span>
-                        )}
+                      </td>
+                      <td className="py-3 px-2">
+                        <span className="font-mono">×{pirep.multiplier}</span>
                       </td>
                       <td className="py-3 px-2">{getStatusBadge(pirep.status)}</td>
                       <td className="py-3 px-2 text-right">
