@@ -151,7 +151,14 @@ export default function PirepHistory() {
                           {pirep.flight_type}
                         </Badge>
                       </td>
-                      <td className="py-3 px-2">{getStatusBadge(pirep.status)}</td>
+                      <td className="py-3 px-2">
+                        <div>{getStatusBadge(pirep.status)}</div>
+                        {pirep.status_reason && (pirep.status === "denied" || pirep.status === "on_hold") && (
+                          <p className="text-xs text-muted-foreground mt-1 max-w-[200px]" title={pirep.status_reason}>
+                            Note: {pirep.status_reason}
+                          </p>
+                        )}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
