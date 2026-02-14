@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { Trophy, Medal, Clock, User } from "lucide-react";
 
-const rankLabels: Record<string, string> = {
+const fallbackRankLabels: Record<string, string> = {
   cadet: "Cadet",
   first_officer: "First Officer",
   captain: "Captain",
@@ -19,6 +19,25 @@ const rankLabels: Record<string, string> = {
 export default function Leaderboard() {
   const { pilot } = useAuth();
   const [period, setPeriod] = useState("all");
+
+  const { data: rankConfigs } = useQuery({
+    queryKey: ["rank-configs"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("rank_configs")
+        .select("name, label")
+        .eq("is_active", true);
+      return data || [];
+    },
+  });
+
+  const rankDisplayNames: Record<string, string> = {};
+  rankConfigs?.forEach((r) => {
+    rankDisplayNames[r.name] = r.label;
+  });
+
+  const getRankLabel = (rank: string) =>
+    rankDisplayNames[rank] || fallbackRankLabels[rank] || rank;
 
   const { data: pilots, isLoading } = useQuery({
     queryKey: ["leaderboard", period],
@@ -75,7 +94,7 @@ export default function Leaderboard() {
               <p className="text-lg font-bold">{pilots[1].full_name}</p>
               <p className="text-sm text-muted-foreground">{pilots[1].pid}</p>
               <Badge variant="secondary" className="mt-2 capitalize">
-                {rankLabels[pilots[1].current_rank] || pilots[1].current_rank}
+                {getRankLabel(pilots[1].current_rank)}
               </Badge>
               <p className="mt-3 text-2xl font-bold">{Number(pilots[1].total_hours).toFixed(1)} hrs</p>
             </CardContent>
@@ -90,7 +109,7 @@ export default function Leaderboard() {
               <p className="text-xl font-bold">{pilots[0].full_name}</p>
               <p className="text-sm text-muted-foreground">{pilots[0].pid}</p>
               <Badge className="mt-2 capitalize bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 border-yellow-500/30">
-                {rankLabels[pilots[0].current_rank] || pilots[0].current_rank}
+                {getRankLabel(pilots[0].current_rank)}
               </Badge>
               <p className="mt-3 text-3xl font-bold">{Number(pilots[0].total_hours).toFixed(1)} hrs</p>
             </CardContent>
@@ -105,7 +124,7 @@ export default function Leaderboard() {
               <p className="text-lg font-bold">{pilots[2].full_name}</p>
               <p className="text-sm text-muted-foreground">{pilots[2].pid}</p>
               <Badge variant="secondary" className="mt-2 capitalize">
-                {rankLabels[pilots[2].current_rank] || pilots[2].current_rank}
+                {getRankLabel(pilots[2].current_rank)}
               </Badge>
               <p className="mt-3 text-2xl font-bold">{Number(pilots[2].total_hours).toFixed(1)} hrs</p>
             </CardContent>
@@ -167,7 +186,7 @@ export default function Leaderboard() {
                       <td className="py-3 px-2 text-muted-foreground font-mono">{p.pid}</td>
                       <td className="py-3 px-2">
                         <Badge variant="outline" className="capitalize">
-                          {rankLabels[p.current_rank] || p.current_rank}
+                          {getRankLabel(p.current_rank)}
                         </Badge>
                       </td>
                       <td className="py-3 px-2 text-right">
