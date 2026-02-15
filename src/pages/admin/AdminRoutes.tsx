@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +15,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Shield, Upload, Plus, Trash2, Route, Download } from "lucide-react";
 import { toast } from "sonner";
 import { RouteImportMapping } from "@/components/admin/RouteImportMapping";
+
+type RouteRow = Database["public"]["Tables"]["routes"]["Row"];
 
 interface ParsedRoute {
   route_number: string;
@@ -39,6 +42,7 @@ export default function AdminRoutes() {
     dep_icao: "",
     arr_icao: "",
     aircraft_icao: "",
+    livery: "",
     route_type: "passenger" as "passenger" | "cargo",
     est_flight_time_minutes: 0,
     min_rank: "cadet",
@@ -70,11 +74,28 @@ export default function AdminRoutes() {
   const { data: routes, isLoading } = useQuery({
     queryKey: ["admin-routes"],
     queryFn: async () => {
-      const { data } = await supabase
+      const pageSize = 1000;
+      const { count, error: countError } = await supabase
         .from("routes")
-        .select("*")
-        .order("route_number");
-      return data || [];
+        .select("id", { count: "exact", head: true });
+
+      if (countError) throw countError;
+      if (!count || count === 0) return [];
+
+      const allRoutes: RouteRow[] = [];
+      for (let from = 0; from < count; from += pageSize) {
+        const to = Math.min(from + pageSize - 1, count - 1);
+        const { data, error } = await supabase
+          .from("routes")
+          .select("*")
+          .order("route_number")
+          .range(from, to);
+
+        if (error) throw error;
+        allRoutes.push(...(data || []));
+      }
+
+      return allRoutes;
     },
   });
 
@@ -86,13 +107,16 @@ export default function AdminRoutes() {
     },
   });
 
+
   const addRouteMutation = useMutation({
     mutationFn: async (route: typeof newRoute) => {
+      const selectedAircraft = aircraft?.find((ac) => ac.id === route.aircraft_icao);
       const { error } = await supabase.from("routes").insert({
         route_number: route.route_number,
         dep_icao: route.dep_icao,
         arr_icao: route.arr_icao,
-        aircraft_icao: route.aircraft_icao || null,
+        aircraft_icao: selectedAircraft?.icao_code || null,
+        livery: selectedAircraft?.livery || null,
         route_type: route.route_type,
         est_flight_time_minutes: route.est_flight_time_minutes,
         min_rank: route.min_rank,
@@ -109,6 +133,7 @@ export default function AdminRoutes() {
         dep_icao: "",
         arr_icao: "",
         aircraft_icao: "",
+        livery: "",
         route_type: "passenger",
         est_flight_time_minutes: 0,
         min_rank: defaultRank,
@@ -449,15 +474,15 @@ export default function AdminRoutes() {
                     <Label>Aircraft</Label>
                     <Select
                       value={newRoute.aircraft_icao}
-                      onValueChange={(v) => setNewRoute({ ...newRoute, aircraft_icao: v })}
+                      onValueChange={(v) => setNewRoute({ ...newRoute, aircraft_icao: v, livery: aircraft?.find((ac) => ac.id === v)?.livery || "" })}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select" />
                       </SelectTrigger>
                       <SelectContent>
                         {aircraft?.map((ac) => (
-                          <SelectItem key={ac.icao_code} value={ac.icao_code}>
-                            {ac.icao_code}
+                          <SelectItem key={ac.id} value={ac.id}>
+                            {ac.name}{ac.livery ? ` (${ac.livery})` : ""}
                           </SelectItem>
                         ))}
                       </SelectContent>

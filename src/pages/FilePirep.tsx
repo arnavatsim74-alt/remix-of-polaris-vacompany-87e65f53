@@ -39,6 +39,7 @@ export default function FilePirep() {
   const [flightType, setFlightType] = useState<"passenger" | "cargo">("passenger");
   const [isLoading, setIsLoading] = useState(false);
 
+
   // Pre-fill from URL params (from Routes / ROTW "File PIREP" buttons)
   useEffect(() => {
     const dep = searchParams.get("dep");
@@ -60,6 +61,21 @@ export default function FilePirep() {
       return data || [];
     },
   });
+
+  const selectedAircraft = aircraft?.find((ac) => ac.id === aircraftIcao);
+
+  useEffect(() => {
+    const aircraftParam = searchParams.get("aircraft");
+    if (!aircraftParam || !aircraft?.length) return;
+
+    const matchingById = aircraft.find((ac) => ac.id === aircraftParam);
+    if (matchingById) return;
+
+    const matchingByIcao = aircraft.find((ac) => ac.icao_code === aircraftParam);
+    if (matchingByIcao) {
+      setAircraftIcao(matchingByIcao.id);
+    }
+  }, [aircraft, searchParams]);
 
   const { data: multipliers } = useQuery({
     queryKey: ["multiplier-configs"],
@@ -98,7 +114,7 @@ export default function FilePirep() {
     e.preventDefault();
 
     if (!pilot?.id) { toast.error("Pilot profile not found"); return; }
-    if (!flightNumber || !depIcao || !arrIcao || !aircraftIcao || !flightHours || !flightDate || !operator) {
+    if (!flightNumber || !depIcao || !arrIcao || !selectedAircraft || !flightHours || !flightDate || !operator) {
       toast.error("Please fill in all required fields"); return;
     }
 
@@ -114,7 +130,7 @@ export default function FilePirep() {
         flight_number: flightNumber.toUpperCase(),
         dep_icao: depIcao.toUpperCase(),
         arr_icao: arrIcao.toUpperCase(),
-        aircraft_icao: aircraftIcao,
+        aircraft_icao: selectedAircraft.icao_code,
         flight_hours: hours,
         flight_date: format(flightDate, "yyyy-MM-dd"),
         multiplier: currentMultiplierValue,
@@ -132,7 +148,7 @@ export default function FilePirep() {
           flight_number: flightNumber.toUpperCase(),
           dep_icao: depIcao.toUpperCase(),
           arr_icao: arrIcao.toUpperCase(),
-          aircraft_icao: aircraftIcao,
+          aircraft_icao: selectedAircraft.icao_code,
           flight_hours: hours,
           operator,
           flight_type: flightType,
@@ -206,12 +222,12 @@ export default function FilePirep() {
               <h3 className="text-sm font-medium text-muted-foreground">Aircraft & Duration</h3>
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="aircraft">Aircraft Type *</Label>
+                  <Label htmlFor="aircraft">Aircraft *</Label>
                   <Select value={aircraftIcao} onValueChange={setAircraftIcao} disabled={isLoading}>
                     <SelectTrigger><SelectValue placeholder="Select aircraft" /></SelectTrigger>
                     <SelectContent>
                       {aircraft?.map((ac) => (
-                        <SelectItem key={ac.id} value={ac.icao_code}>
+                        <SelectItem key={ac.id} value={ac.id}>
                           {ac.name}{ac.livery ? ` (${ac.livery})` : ""}
                         </SelectItem>
                       ))}
