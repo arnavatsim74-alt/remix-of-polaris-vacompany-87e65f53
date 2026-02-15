@@ -66,10 +66,19 @@ export default function FilePirep() {
 
   useEffect(() => {
     const aircraftParam = searchParams.get("aircraft");
+    const liveryParam = searchParams.get("livery");
     if (!aircraftParam || !aircraft?.length) return;
 
     const matchingById = aircraft.find((ac) => ac.id === aircraftParam);
     if (matchingById) return;
+
+    const matchingByIcaoAndLivery = aircraft.find(
+      (ac) => ac.icao_code === aircraftParam && (ac.livery || "") === (liveryParam || "")
+    );
+    if (matchingByIcaoAndLivery) {
+      setAircraftIcao(matchingByIcaoAndLivery.id);
+      return;
+    }
 
     const matchingByIcao = aircraft.find((ac) => ac.icao_code === aircraftParam);
     if (matchingByIcao) {
