@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +10,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Route, Search, Plane, FileText } from "lucide-react";
+
+type RouteRow = Database["public"]["Tables"]["routes"]["Row"];
+type AircraftRow = Database["public"]["Tables"]["aircraft"]["Row"];
 
 const rankLabels: Record<string, string> = {
   cadet: "Cadet",
@@ -28,27 +32,53 @@ export default function RoutesPage() {
   const { data: routes, isLoading } = useQuery({
     queryKey: ["routes"],
     queryFn: async () => {
-      const { data } = await supabase
+      const pageSize = 1000;
+      const { count, error: countError } = await supabase
         .from("routes")
-        .select("*")
-        .eq("is_active", true)
-        .order("route_number");
-      return data || [];
+        .select("id", { count: "exact", head: true })
+        .eq("is_active", true);
+
+      if (countError) throw countError;
+      if (!count || count === 0) return [];
+
+      const allRoutes: RouteRow[] = [];
+      for (let from = 0; from < count; from += pageSize) {
+        const to = Math.min(from + pageSize - 1, count - 1);
+        const { data, error } = await supabase
+          .from("routes")
+          .select("*")
+          .eq("is_active", true)
+          .order("route_number")
+          .range(from, to);
+
+        if (error) throw error;
+        allRoutes.push(...(data || []));
+      }
+
+      return allRoutes;
     },
   });
 
   const { data: aircraft } = useQuery({
     queryKey: ["aircraft"],
     queryFn: async () => {
-      const { data } = await supabase.from("aircraft").select("*").order("icao_code");
+      const { data } = await supabase.from("aircraft").select("*").order("icao_code").order("name");
       return data || [];
     },
   });
 
+  const selectedAircraftFilter = useMemo<AircraftRow | null>(() => {
+    if (aircraftFilter === "all") return null;
+    return aircraft?.find((ac) => ac.id === aircraftFilter) || null;
+  }, [aircraft, aircraftFilter]);
+
   const filteredRoutes = routes?.filter((route) => {
     const matchesDep = depFilter === "" || route.dep_icao.includes(depFilter.toUpperCase());
     const matchesArr = arrFilter === "" || route.arr_icao.includes(arrFilter.toUpperCase());
-    const matchesAircraft = aircraftFilter === "all" || route.aircraft_icao === aircraftFilter;
+    const matchesAircraft =
+      !selectedAircraftFilter ||
+      (route.aircraft_icao === selectedAircraftFilter.icao_code &&
+        (route.livery || "") === (selectedAircraftFilter.livery || ""));
     const matchesType = typeFilter === "all" || route.route_type === typeFilter;
     return matchesDep && matchesArr && matchesAircraft && matchesType;
   });
@@ -59,8 +89,20 @@ export default function RoutesPage() {
     return `${hours}:${mins.toString().padStart(2, "0")}`;
   };
 
-  const handleFilePirep = (route: any) => {
-    navigate(`/file-pirep?dep=${route.dep_icao}&arr=${route.arr_icao}&aircraft=${route.aircraft_icao || ""}&flight=${route.route_number}&type=${route.route_type}`);
+  const handleFilePirep = (route: RouteRow) => {
+    const params = new URLSearchParams({
+      dep: route.dep_icao,
+      arr: route.arr_icao,
+      aircraft: route.aircraft_icao || "",
+      flight: route.route_number,
+      type: route.route_type,
+    });
+
+    if (route.livery) {
+      params.set("livery", route.livery);
+    }
+
+    navigate(`/file-pirep?${params.toString()}`);
   };
 
   return (
@@ -114,8 +156,8 @@ export default function RoutesPage() {
                 <SelectContent>
                   <SelectItem value="all">All Aircraft</SelectItem>
                   {aircraft?.map((ac) => (
-                    <SelectItem key={ac.icao_code} value={ac.icao_code}>
-                      {ac.icao_code}
+                    <SelectItem key={ac.id} value={ac.id}>
+                      {ac.name}{ac.livery ? ` (${ac.livery})` : ""}
                     </SelectItem>
                   ))}
                 </SelectContent>

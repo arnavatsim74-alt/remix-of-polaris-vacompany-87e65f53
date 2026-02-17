@@ -20,7 +20,7 @@ export function DailyFeaturedRoutes() {
           id,
           route:routes (
             id, route_number, dep_icao, arr_icao, aircraft_icao,
-            route_type, est_flight_time_minutes
+            livery, route_type, est_flight_time_minutes
           )
         `)
         .eq("featured_date", today);
@@ -61,7 +61,10 @@ export function DailyFeaturedRoutes() {
                 <div className="hidden md:flex items-center gap-3 text-sm text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <Plane className="h-3.5 w-3.5" />
-                    {route.aircraft_icao}
+                    <span>
+                      {route.aircraft_icao}
+                      {route.livery && <span className="text-xs ml-1">({route.livery})</span>}
+                    </span>
                   </span>
                   <span className="flex items-center gap-1">
                     <Clock className="h-3.5 w-3.5" />
@@ -71,11 +74,21 @@ export function DailyFeaturedRoutes() {
               </div>
               <Button
                 size="sm"
-                onClick={() =>
-                  navigate(
-                    `/file-pirep?dep=${route.dep_icao}&arr=${route.arr_icao}&aircraft=${route.aircraft_icao || ""}&flight=${route.route_number}&type=${route.route_type}`
-                  )
-                }
+                onClick={() => {
+                  const params = new URLSearchParams({
+                    dep: route.dep_icao,
+                    arr: route.arr_icao,
+                    aircraft: route.aircraft_icao || "",
+                    flight: route.route_number,
+                    type: route.route_type,
+                  });
+
+                  if (route.livery) {
+                    params.set("livery", route.livery);
+                  }
+
+                  navigate(`/file-pirep?${params.toString()}`);
+                }}
               >
                 <FileText className="h-3.5 w-3.5 mr-1.5" />
                 File PIREP

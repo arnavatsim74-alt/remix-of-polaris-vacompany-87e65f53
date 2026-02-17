@@ -39,7 +39,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .from("pilots")
         .select("*")
         .eq("user_id", userId)
-        .single();
+        .maybeSingle();
 
       if (pilotData) {
         setPilot({
@@ -51,6 +51,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           total_pireps: pilotData.total_pireps || 0,
           current_rank: pilotData.current_rank || "cadet",
         });
+      } else {
+        setPilot(null);
       }
 
       const { data: roleData } = await supabase
@@ -63,6 +65,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsAdmin(!!roleData);
     } catch (error) {
       console.error("Error fetching pilot data:", error);
+      setPilot(null);
+      setIsAdmin(false);
     }
   };
 

@@ -58,7 +58,19 @@ export default function RoutesOfTheWeek() {
   };
 
   const handleFilePirep = (route: any) => {
-    navigate(`/file-pirep?dep=${route.dep_icao}&arr=${route.arr_icao}&aircraft=${route.aircraft_icao || ""}&flight=${route.route_number}&type=${route.route_type}`);
+    const params = new URLSearchParams({
+      dep: route.dep_icao,
+      arr: route.arr_icao,
+      aircraft: route.aircraft_icao || "",
+      flight: route.route_number,
+      type: route.route_type,
+    });
+
+    if (route.livery) {
+      params.set("livery", route.livery);
+    }
+
+    navigate(`/file-pirep?${params.toString()}`);
   };
 
   const getRouteForDay = (dayIndex: number) => {
